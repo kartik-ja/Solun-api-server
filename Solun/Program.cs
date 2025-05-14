@@ -28,12 +28,13 @@ builder.Services.AddSingleton<ISolunDynamoDb, SolunDynamoDb>();
 builder.Services.AddSingleton<IWatchService, WatchService>();
 builder.Services.AddSingleton<IMapper, Mapper>();
 var app = builder.Build();
-
+app.UseDefaultFiles();
+app.UseStaticFiles();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    //app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
@@ -42,9 +43,24 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+var env = app.Environment; // Add this line to define 'env' in the current context
+
+app.Use(async (context, next) =>
+{
+	// Allow API calls and static files to be handled normally
+	if (context.Request.Path.StartsWithSegments("/api") ||
+		Path.HasExtension(context.Request.Path))
+	{
+		await next();
+		return;
+	}
+
+	var indexPath = Path.Combine(app.Environment.WebRootPath ?? "wwwroot", "index.html");
+	context.Response.ContentType = "text/html";
+	await context.Response.SendFileAsync(indexPath);
+});
+
 app.Run();
-
-
 
 
 

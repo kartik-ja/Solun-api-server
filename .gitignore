@@ -5,7 +5,7 @@
 
 # dotenv files
 .env
-
+Solun/wwwroot
 # User-specific files
 *.rsuser
 *.suo
